@@ -1,6 +1,6 @@
 <?php
 // テキストファイルの名前
-$fileName = "test.dat";
+$fileName = "data/memo.csv";
 $errMessage = "エラーが発生しました。";
 // フォームから送られてきた値
 $answer = $_POST['hidden-btn'];
@@ -42,12 +42,10 @@ if ($isExist) {
         $ansResult++;
         $data[2] = $ansResult;
     } else {
-        // 想定外の値の場合、更新しないで返す。
-        //header("Location: ".$uri);
+        header("Location:d219.php");
     }
 
     //var_dump($data);
-    // $dataでファイルの中身を置き換える。(排他制御)
     file_put_contents($fileName, serialize($data), LOCK_EX);
     /****** ↑共通化できそう *****/
 } else {
@@ -80,12 +78,9 @@ if ($isExist) {
         $ansResult++;
         $data[2] = $ansResult;
     } else {
-        // 想定外の値の場合、更新しないで返す。
-        //header("Location: ".$uri);
-    }
+        header("Location:d219.php");    }
     // ファイルに保存
     file_put_contents($fileName, serialize($data), LOCK_EX);
-    /****** ↑共通化できそう *****/
 }
 // キャッシュ削除
 clearstatcache();
@@ -115,14 +110,12 @@ clearstatcache();
         <canvas id="myChart" width="200" height="200"></canvas>
         <p id="noChart">まだ投票がありません。</p>
     </div>
-    <!-- いちいちブラウザのdeveloperToolを使うのが面倒なので、ストレージ削除ボタン追加。テスト時のみ実施。 -->
     <button onclick="deleteLocalStorage()">ストレージ削除(テスト用)</button>
 </body>
 <script>
     $(function() {
         // 投票の選択肢ボタンクリックイベント
         $('.question-btn').click(function() {
-            // 投票済みフラグがあれば処理を中断
             var isVote = getLocalStorage();
             console.log(isVote);
             if (isVote != null) {
@@ -135,7 +128,6 @@ clearstatcache();
             $('#hidden-btn').val(ans);
             form1.submit();
 
-            // 投票済みフラグを設定
             setLocalStorage();
             return false;
         });
@@ -144,7 +136,6 @@ clearstatcache();
         drawChart();
     })
 
-    /* 円グラフを描画*/
     var drawChart = function() {
         var array = <?php echo json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 
@@ -185,14 +176,12 @@ clearstatcache();
     }
 
     /**
-     * 投票済みフラグをローカルストレージから取得する。
      */
     var getLocalStorage = function() {
         return JSON.parse(localStorage.getItem('isVote'));
     }
 
     /**
-     * 投票済みフラグをローカルストレージに保存します。
      */
     var setLocalStorage = function() {
         var isVote = JSON.stringify('voted');
@@ -200,9 +189,6 @@ clearstatcache();
         alert('投票しました。');
     }
 
-    /**
-     * 投票済みフラグをローカルストレージから削除します。
-     */
     var deleteLocalStorage = function() {
         localStorage.removeItem('isVote');
         alert('ストレージ（isVote）を削除しました。');

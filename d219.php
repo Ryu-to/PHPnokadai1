@@ -1,6 +1,6 @@
 <?php
 // テキストファイルの名前
-$fileName = "test.dat";
+$fileName = "data/memo.csv";
 $errMessage = "エラーが発生しました。";
 // フォームから送られてきた値
 $answer = $_POST['hidden-btn'];
@@ -8,48 +8,39 @@ $answer = $_POST['hidden-btn'];
 // キャッシュ削除
 clearstatcache();
 
-// test.txtが存在するか確認
 // 存在すればtrue
 $isExist = file_exists($fileName);
 
 if ($isExist) {
 
     // 値を取得
-    // 取得できない場合はfalseが返るので、初期値設定
     $array = unserialize(file_get_contents($fileName));
     //var_dump($array);
     if (!$array) {
         $data = [0, 0, 0];
     } else {
-        // 取得できた値を使う
         $data = $array;
     }
 
-    /****** ↓共通化できそう *****/
     if ($answer == "1") {
-        // 元々の値を上書き
         $ansResult = $data[0];
         $ansResult++;
         $data[0] = $ansResult;
     } else if ($answer == "2") {
-        // 元々の値を上書き
         $ansResult = $data[1];
         $ansResult++;
         $data[1] = $ansResult;
     } else if ($answer == "3") {
-        // 元々の値を上書き
         $ansResult = $data[2];
         $ansResult++;
         $data[2] = $ansResult;
     } else {
-        // 想定外の値の場合、更新しないで返す。
         //header("Location: ".$uri);
     }
 
     //var_dump($data);
-    // $dataでファイルの中身を置き換える。(排他制御)
     file_put_contents($fileName, serialize($data), LOCK_EX);
-    /****** ↑共通化できそう *****/
+   
 } else {
     // 存在しない場合は新しく作成
     $result = touch($fileName);
@@ -62,7 +53,7 @@ if ($isExist) {
     // [0,0,0]の配列を作成
     $data = [0, 0, 0];
 
-    /****** ↓共通化できそう *****/
+  
     // 結果を加算
     if ($answer == "1") {
         // 元々の値を上書き
@@ -80,19 +71,17 @@ if ($isExist) {
         $ansResult++;
         $data[2] = $ansResult;
     } else {
-        // 想定外の値の場合、更新しないで返す。
+       
         //header("Location: ".$uri);
     }
     // ファイルに保存
     file_put_contents($fileName, serialize($data), LOCK_EX);
-    /****** ↑共通化できそう *****/
 }
 
 // キャッシュ削除
 clearstatcache();
 
 if ($_POST['submit']) {
-    ### POSTされたときの処理、省略 ###
     $uri = $_SERVER['HTTP_REFERER'];
     header("Location: " . $uri);
 }
@@ -108,7 +97,7 @@ if ($_POST['submit']) {
 </head>
 
 <body>
-    <h1>どれが好き？</h1>
+    <h1>SPORTS</h1>
     <p>🏀</p>
     <p>⚽️</p>
     <p>🎾</p>
@@ -128,7 +117,6 @@ if ($_POST['submit']) {
         $('.question-btn').click(function() {
             var form1 = document.forms['question-form'];
             //
-            // バリデーションチェックや、データの加工を行う。
             //
             var ans = $(this).text();
             $('#hidden-btn').val(ans);
