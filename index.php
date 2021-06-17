@@ -87,15 +87,9 @@ if ($isExist) {
     file_put_contents($fileName, serialize($data), LOCK_EX);
     /****** ↑共通化できそう *****/
 }
-
 // キャッシュ削除
 clearstatcache();
 
-if ($_POST['submit']) {
-    ### POSTされたときの処理、省略 ###
-    $uri = $_SERVER['HTTP_REFERER'];
-    header("Location: " . $uri);
-}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -108,13 +102,12 @@ if ($_POST['submit']) {
 </head>
 
 <body>
-    <h1>どれが好き？</h1>
-    <p>🏀</p>
-    <p>⚽️</p>
-    <p>🎾</p>
-    <button class="question-btn">1</button>
-    <button class="question-btn">2</button>
-    <button class="question-btn">3</button>
+    <h1>SPOTS</h1>
+    <p>A.バスケ　B.サッカー　C.テニス</p>
+  
+    <button class="question-btn">🏀</button>
+    <button class="question-btn">⚽️</button>
+    <button class="question-btn">🎾</button>
     <form id="question-form" action="index.php" method="post">
         <input type="hidden" id="hidden-btn" name="hidden-btn" value="">
     </form>
@@ -122,33 +115,47 @@ if ($_POST['submit']) {
         <canvas id="myChart" width="200" height="200"></canvas>
         <p id="noChart">まだ投票がありません。</p>
     </div>
+    <!-- いちいちブラウザのdeveloperToolを使うのが面倒なので、ストレージ削除ボタン追加。テスト時のみ実施。 -->
+    <button onclick="deleteLocalStorage()">ストレージ削除(テスト用)</button>
 </body>
 <script>
     $(function() {
+        // 投票の選択肢ボタンクリックイベント
         $('.question-btn').click(function() {
+            // 投票済みフラグがあれば処理を中断
+            var isVote = getLocalStorage();
+            console.log(isVote);
+            if (isVote != null) {
+                alert('すでに投票済みです。');
+                return;
+            }
+
             var form1 = document.forms['question-form'];
-            //
-            // バリデーションチェックや、データの加工を行う。
-            //
             var ans = $(this).text();
             $('#hidden-btn').val(ans);
-
             form1.submit();
+
+            // 投票済みフラグを設定
+            setLocalStorage();
             return false;
         });
 
+        // グラフ描画
         drawChart();
     })
 
+    /* 円グラフを描画*/
     var drawChart = function() {
         var array = <?php echo json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-        console.log(array);
+
+       
         var matchNum = 0;
         for (var i = 0; i < array.length; i++) {
             if (array[i] === 0) {
                 matchNum++;
             }
         }
+
         if (array.length === matchNum) {
             $('#myChart').hide();
             $('#noChart').show();
@@ -157,11 +164,12 @@ if ($_POST['submit']) {
             $('#noChart').hide();
         }
 
+        // グラフ描画
         var ctx = document.getElementById("myChart").getContext('2d');
         var myChart = new Chart(ctx, {
             type: 'pie',
             data: {
-                labels: ["1:バスケ", "2:野球", "3:サッカー"],
+                labels: ["A:バスケ", "B:サッカー", "C:テニス"],
                 datasets: [{
                     label: 'アンケート',
                     data: array,
@@ -174,6 +182,30 @@ if ($_POST['submit']) {
                 }]
             }
         });
+    }
+
+    /**
+     * 投票済みフラグをローカルストレージから取得する。
+     */
+    var getLocalStorage = function() {
+        return JSON.parse(localStorage.getItem('isVote'));
+    }
+
+    /**
+     * 投票済みフラグをローカルストレージに保存します。
+     */
+    var setLocalStorage = function() {
+        var isVote = JSON.stringify('voted');
+        localStorage.setItem('isVote', isVote);
+        alert('投票しました。');
+    }
+
+    /**
+     * 投票済みフラグをローカルストレージから削除します。
+     */
+    var deleteLocalStorage = function() {
+        localStorage.removeItem('isVote');
+        alert('ストレージ（isVote）を削除しました。');
     }
 </script>
 <style>
